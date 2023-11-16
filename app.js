@@ -1,11 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     const image = document.getElementById('fileInput');
-    const convert_btn = document.getElementById('convert_btn');
-    const download_btn = document.getElementById('download_btn');
-    const extracted_text = document.getElementById('result');
+    const convertBtn = document.getElementById('convert_btn');
+    const downloadBtn = document.getElementById('download_btn');
+    const extractedText = document.getElementById('result');
+    const convertMsg = document.getElementById("convert_msg");
 
     let imageDataUrl = '';
-    let image_preview;
+    let imagePreview;
+    let isConverted = false;
+    let extractedTextValue = '';
 
     async function convert() {
         try {
@@ -14,25 +17,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Use Tesseract to recognize text in the displayed image
-            const { data: { text } } = await Tesseract.recognize(
-                image_preview, 
-                'eng', 
-                { logger: m => console.log(m) 
-            });
-            //console.log(text);
+            if (!isConverted) {
+                convertMsg.style.color="black"
+                convertMsg.textContent = "Converting...";
 
-            // Display the extracted text in a div
-            if (text) {
-                extracted_text.textContent = text;
-                return text;
+                // Convert the image only if it hasn't been converted yet
+                const { data: { text } } = await Tesseract.recognize(imageDataUrl, 'eng', { logger: m => console.log(m) });
+
+                if (text) {
+                    extractedTextValue = text;
+                    isConverted = true;
+                    extractedText.style.backgroundColor = '#f9f9f9';
+                    extractedText.textContent = text;
+                    convertMsg.style.color="green"
+                    convertMsg.textContent = "Conversion Complete";
+                    return text;
+                } else {
+                    alert('Text extraction failed.');
+                    throw new Error('Text extraction failed.');
+                }
             } else {
-                alert('Text extraction failed.')
-                throw new Error('Text extraction failed.');
+                // If already converted, return the stored extracted text
+                return extractedTextValue;
             }
         } catch (error) {
             console.error(error);
-            alert("Error during text recognition. Please try again.");    
+            alert("Error during text recognition. Please try again.");
         }
     }
 
@@ -43,29 +53,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 imageDataUrl = event.target.result;
-                if (!image_preview) {
+                if (!imagePreview) {
                     // Create image container dynamically
-                    image_preview = document.createElement('div');
-                    image_preview.className = 'image-container';
-                    
-                    // Create img element and set its source
+                    imagePreview = document.createElement('div');
+                    imagePreview.className = 'image-container';
+
+                    // Create img element
                     const img = document.createElement('img');
                     img.setAttribute("id", 'imagePreview');
-                    image_preview.appendChild(img);
-    
-                    // Append image_preview above the buttons
+                    imagePreview.appendChild(img);
+
+                    // Append imagePreview above the buttons
                     const container = document.querySelector('.container');
-                    container.insertBefore(image_preview, container.childNodes[4]);
+                    container.insertBefore(imagePreview, container.childNodes[4]);
                 }
-                image_preview.querySelector('#imagePreview').src = imageDataUrl;
+                imagePreview.querySelector('#imagePreview').src = imageDataUrl;
+                isConverted = false; // New image is uploaded
             };
             reader.readAsDataURL(file);
         }
     });
 
-    download_btn.addEventListener('click', async () => {
-        const extractedText = await convert();
-        if (!extractedText) {
+    downloadBtn.addEventListener('click', async () => {
+        const textToDownload = await convert();
+        if (!textToDownload) {
             return;
         }
         let filename = prompt("Enter a filename:");
@@ -75,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Create a file with the extracted text and make it downloadable
-        const blob = new Blob([extractedText], { type: "text/plain;charset=utf-8" });
+        const blob = new Blob([textToDownload], { type: "text/plain;charset=utf-8" });
         const downloadLink = document.createElement('a');
         downloadLink.href = URL.createObjectURL(blob);
         downloadLink.download = `${filename}.txt`;
@@ -85,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.removeChild(downloadLink);
     });
 
-    convert_btn.addEventListener('click', async () => {
+    convertBtn.addEventListener('click', async () => {
         await convert();
     });
 });
