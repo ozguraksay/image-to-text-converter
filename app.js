@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Use Tesseract to recognize text in the displayed image
             const { data: { text } } = await Tesseract.recognize(
-                image_preview, 'eng', 
+                image_preview, 
+                'eng', 
                 { logger: m => console.log(m) 
             });
             //console.log(text);
