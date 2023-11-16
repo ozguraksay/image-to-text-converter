@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Text Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js"></script>
+    <script src="app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Image to Text Converter</h1>
+        <input type="file" accept="image/*" id="fileInput" style="padding-left: 10%; padding: 10px;">
+        <div class="image-container">
+            <img id="imagePreview">
+        </div>
+        <button id="convert_btn">Convert</button>
+        <button id="download_btn">Download as txt</button>
+        <div id="result" class="result"></div>
+    </div>
+</body>
+</html>
