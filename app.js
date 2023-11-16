@@ -2,10 +2,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const image = document.getElementById('fileInput');
     const convert_btn = document.getElementById('convert_btn');
     const download_btn = document.getElementById('download_btn');
-    const image_preview = document.getElementById('imagePreview');
     const extracted_text = document.getElementById('result');
 
     let imageDataUrl = '';
+    let image_preview;
 
     async function convert() {
         try {
@@ -43,7 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 imageDataUrl = event.target.result;
-                image_preview.src = imageDataUrl;
+                if (!image_preview) {
+                    // Create image container dynamically
+                    image_preview = document.createElement('div');
+                    image_preview.className = 'image-container';
+                    
+                    // Create img element and set its source
+                    const img = document.createElement('img');
+                    img.setAttribute("id", 'imagePreview');
+                    image_preview.appendChild(img);
+    
+                    // Append image_preview above the buttons
+                    const container = document.querySelector('.container');
+                    container.insertBefore(image_preview, container.childNodes[4]);
+                }
+                image_preview.querySelector('#imagePreview').src = imageDataUrl;
             };
             reader.readAsDataURL(file);
         }
